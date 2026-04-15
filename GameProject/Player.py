@@ -1,5 +1,5 @@
 import pygame as py
-
+import time
 
 class Player:
     '''
@@ -73,7 +73,7 @@ class Player:
         else:
             Player.collide = False
                                                                   
-class bullets:
+class Bullets:
     '''
     Creates objects that damage the player
     '''
@@ -84,12 +84,24 @@ class bullets:
     def __init__(self, x, y, img):
        
         self.x = x
-        self.y = y
+        self.y = y 
         self.w = 30
         self.h = 30
+        self.dmg = 20
         self.img = img
         self.rect = (self.x, self.y, self.w, self.h) 
 
     def draw(self, screen):
         #blit draws surface on a surface. Here image surface is drawn on the screen
-        screen.blit(self.img, (self.x, self.y))
+        screen.blit(self.img, (self.x, self.y - 1))
+
+    
+    def move(self, screen, grid):
+        r = self.y//60 
+        c = self.x//60
+        if r + 1 < len(grid) and grid[r + 1][c]!= 0:
+            self.y += 3
+            
+        
+            
+        self.rect = (self.x, self.y, self.w, self.h)
