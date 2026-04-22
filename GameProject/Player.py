@@ -60,18 +60,19 @@ class Player:
 
     
     def collision(self, obstacle):
+       
         if abs(self.x - obstacle.x) < self.w:
-           
             if abs(self.y - obstacle.y) < self.h:
                 if (not Player.collide):
                     print("Collision")
                     Player.collide = True
                     return
-            
             else:
                 Player.collide = False
+                
         else:
             Player.collide = False
+            
                                                                   
 class Bullets:
     '''
@@ -93,15 +94,38 @@ class Bullets:
 
     def draw(self, screen):
         #blit draws surface on a surface. Here image surface is drawn on the screen
-        screen.blit(self.img, (self.x, self.y - 1))
+        r = self.y//60
+        if r < 8:   
+            screen.blit(self.img, (self.x, self.y - 2))
+        '''else:
+            screen.blit(self.img, (self.x, -2))'''
+        
 
     
     def move(self, screen, grid):
         r = self.y//60 
         c = self.x//60
-        if r + 1 < len(grid) and grid[r + 1][c]!= 0:
+        if r + 1 < len(grid) and grid[r + 1][c]!= 0: #or r + 1 >= len(grid):
             self.y += 3
             
         
             
         self.rect = (self.x, self.y, self.w, self.h)
+
+
+class Shmaloogle:
+    
+    
+    def __init__(self, x, y, img):
+       
+        self.x = x
+        self.y = y
+        self.w = 50
+        self.h = 50
+        self.img = img
+        self.hp = 200
+        self.rect = (self.x, self.y, self.w, self.h) 
+
+    def draw(self, screen):
+        #blit draws surface on a surface. Here image surface is drawn on the screen
+        screen.blit(self.img, (self.x, self.y))    

@@ -3,6 +3,7 @@ import pygame as py
 from obstacle import Obstacle
 from Player import Player
 from Player import Bullets
+from Player import Shmaloogle
 import time
 #to generalise  our grid we use the following variables
 py.mixer.init()
@@ -12,7 +13,6 @@ grid_r, grid_c = 9, 9
 grid = [[randint(0,4) for i in range(grid_c)] for j in range(grid_r)]
 grid[5][4] = 7
 grid2 = [[randint(0,1) for i in range(grid_c)]] + [[1 for i in range(grid_c)] for j in range(grid_r - 1)]
-
 #ensure starting area is always open
 grid[0][0] = 1
 grid[0][1] = 1  #right neighbour
@@ -24,9 +24,10 @@ print("go talk to shmallogle")
 cell_size = 60 #cell size in which the player will reside
 #width and height of the game layout depends on the grid and cell size
 width, height = cell_size*grid_c, cell_size*grid_r
-panel = 150
+panel = 300
 coins = 0
 sImg = py.image.load('shmaloogle.webp')
+spImg = py.transform.scale(sImg,(260,260))
 sImg = py.transform.scale(sImg,(60,60))
 bImg = py.image.load('bulletbill.webp')
 bImg = py.transform.scale(bImg,(60,60))
@@ -42,8 +43,10 @@ pImg = py.image.load('poop.jpg')
 pImg = py.transform.scale(pImg,(60,60))
 fbgImg = py.image.load('fightbg.jpg')
 fbgImg = py.transform.scale(fbgImg,(width,height))
+dbgImg = py.image.load('genericds.jpg')
+dbgImg = py.transform.scale(dbgImg,(width,height))
 player1 = Player(0,0,img)
-
+shmaloogle = Shmaloogle(4*60,5*60,sImg) #best line of code ever?
 bulletlist = []
 for r in range(grid_r):
     for c in range(grid_c):
@@ -65,6 +68,7 @@ def draw_grid(grid:list):
     row = 0 #row of grid
     col = 0 #column of grid
     index = 0
+    shmaloogle.draw(screen)
     for i in range(grid_r*grid_c): #looping through the entire grid
         if grid[row][col] == 0:    #check if grid list has 1
             #if yes then draw the obstacle
@@ -72,8 +76,7 @@ def draw_grid(grid:list):
             index += 1
         elif grid[row][col] == 3:
             screen.blit(cImg,(col * cell_size, row * cell_size))
-        if (row, col) == (5,4):
-            screen.blit(sImg,(col * cell_size, row * cell_size))
+        
         '''elif grid[row][col] == 6:
             screen.blit(cImg,(col * cell_size, row * cell_size))
         elif grid[row][col] == 5:
@@ -82,6 +85,8 @@ def draw_grid(grid:list):
         if col == grid_c: #if you reach kast column
             row += 1 #then we go to the next row
             col = 0 #and we reset the column to zero
+
+    
 
 def draw_fight(grid2:list):
     row = 0 #row of grid
@@ -97,18 +102,26 @@ def draw_fight(grid2:list):
         if col == grid_c: #if you reach kast column
             row += 1 #then we go to the next row
             col = 0 #and we reset the column to zero             
-       
-        
-
+fight = False
+death = False
 def draw_panel(screen, coins):
     font = py.font.SysFont(None, 30)
     #panel background
     py.draw.rect(screen,"#8BD0CA", (width, 0 , panel, height))
     textSurface = font.render(f"Coins: {player1.coin}", True, "#ffffff")
     textSurface2 = font.render(f"HP: {player1.hp}", True, "#ffffff")
+    textsurface3 = font.render(f"Shmaloogle HP: {shmaloogle.hp}", True, "#ffffff")
+    textSurface4 = font.render(f"Imagine dying.... Idiot", True, "#ffffff")
     screen.blit(textSurface, (width + 20, 40))
-    screen.blit(textSurface2,(width + 20, 60))
-fight = False
+    screen.blit(textSurface2, (width + 20, 60))
+    if fight == True:
+        screen.blit(textsurface3, (width + 20, 240))
+        screen.blit(spImg, (width + 20, 250))
+    if death == True:
+        screen.blit(textSurface4, (width + 20, 240))
+        screen.blit(spImg, (width + 20, 250))
+
+
 def dig():
     global fight
     if(grid[player1.y//60][player1.x//60]== 3):
@@ -159,9 +172,43 @@ while run:
             dig()
         for r in bulletlist:
             r.move(screen, grid2)
-            
+        '''
+        check one bullet if it reached the bottom bulletList[0].y
+        then you generate a new list with 9 places. Replace the 0 with bullets
+        and then draw them from x = 0
+        ''' 
+        if bulletlist[0].y >= 8*cell_size:
+            grid2 = [[randint(0,1) for i in range(grid_c)]] + [[1 for i in range(grid_c)] for j in range(grid_r - 1)]
+            bulletlist = []
+            for r in range(grid_r):
+                for c in range(grid_c):
+                    if grid2[r][c] == 0:
+                        bulletlist.append(Bullets(c*cell_size, r*cell_size,bImg))
+        for i in bulletlist:
+            player1.collision(i)
+            if player1.collide == True:
+               player1.hp -= 25
+               draw_panel(screen,coins)
+               grid2 = [[randint(0,1) for i in range(grid_c)]] + [[1 for i in range(grid_c)] for j in range(grid_r - 1)]
+               bulletlist = []
+               for r in range(grid_r):
+                   for c in range(grid_c):
+                       if grid2[r][c] == 0:
+                        bulletlist.append(Bullets(c*cell_size, r*cell_size,bImg))
+
+        
+
         draw_fight(grid2)
-    player1.draw(screen)
+    
+    if player1.hp == 0:
+        fight = False
+        death = True
+        screen.blit(dbgImg,(0,0))
+    
+    
+    if player1.hp != 0:
+        player1.draw(screen)
+
 
     
     
