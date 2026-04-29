@@ -106,7 +106,7 @@ class Bullets:
         r = self.y//60 
         c = self.x//60
         if r + 1 < len(grid) and grid[r + 1][c]!= 0: #or r + 1 >= len(grid):
-            self.y += 3
+            self.y += 5
             
         
             

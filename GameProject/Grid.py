@@ -9,10 +9,12 @@ import time
 py.mixer.init()
 coin_sound = py.mixer.Sound("yoda.mp3.mp3")
 pipe_sound = py.mixer.Sound("pipe.mp3")
+#mouse_x , mouse_y = py.mouse.get_pos()
 grid_r, grid_c = 9, 9
 grid = [[randint(0,4) for i in range(grid_c)] for j in range(grid_r)]
 grid[5][4] = 7
 grid2 = [[randint(0,1) for i in range(grid_c)]] + [[1 for i in range(grid_c)] for j in range(grid_r - 1)]
+grid3 = [[5 for i in range(grid_c)]for j in range(grid_r)] + [[8 for i in range(grid_c - 5)] for j in range(grid_r)]
 #ensure starting area is always open
 grid[0][0] = 1
 grid[0][1] = 1  #right neighbour
@@ -45,13 +47,24 @@ fbgImg = py.image.load('fightbg.jpg')
 fbgImg = py.transform.scale(fbgImg,(width,height))
 dbgImg = py.image.load('genericds.jpg')
 dbgImg = py.transform.scale(dbgImg,(width,height))
+vImg = py.image.load('vic.jpg')
+vImg = py.transform.scale(vImg,(width,height))
 player1 = Player(0,0,img)
 shmaloogle = Shmaloogle(4*60,5*60,sImg) #best line of code ever?
+mImg = py.image.load('menu.jpg')
+mImg = py.transform.scale(mImg,(width,height))
 bulletlist = []
+play = False
+
 for r in range(grid_r):
     for c in range(grid_c):
         if grid2[r][c] == 0:
-            bulletlist.append(Bullets(c*cell_size, r*cell_size,bImg)) 
+            bulletlist.append(Bullets(c*cell_size, r*cell_size,bImg))
+                    
+'''for r in range(grid_r):
+    for c in range(grid_c):
+        if grid2[r][c] == 0:
+            bulletlist.append(Bullets(c*cell_size, r*cell_size,bImg))''' 
 obstaclelist = []
 for r in range(grid_r):
     for c in range(grid_c):
@@ -68,7 +81,8 @@ def draw_grid(grid:list):
     row = 0 #row of grid
     col = 0 #column of grid
     index = 0
-    shmaloogle.draw(screen)
+    if shmaloogle.hp != 0:
+        shmaloogle.draw(screen)
     for i in range(grid_r*grid_c): #looping through the entire grid
         if grid[row][col] == 0:    #check if grid list has 1
             #if yes then draw the obstacle
@@ -98,12 +112,18 @@ def draw_fight(grid2:list):
             #if yes then draw the obstacle
             bulletlist[index].draw(screen)
             index += 1
+        if grid2[row][col] == 3:
+            screen.blit(cImg,(col * cell_size, row * cell_size))
         col += 1 #then go to the next cell
         if col == grid_c: #if you reach kast column
             row += 1 #then we go to the next row
-            col = 0 #and we reset the column to zero             
+            col = 0 #and we reset the column to zero
+        
+
+
 fight = False
 death = False
+win = False
 def draw_panel(screen, coins):
     font = py.font.SysFont(None, 30)
     #panel background
@@ -124,13 +144,15 @@ def draw_panel(screen, coins):
 
 def dig():
     global fight
-    if(grid[player1.y//60][player1.x//60]== 3):
+    if(grid2[player1.y//60][player1.x//60]== 3):
         if event.type == py.KEYDOWN:
             if event.key == py.K_SPACE:
                 player1.coin += 1
                 coin_sound.play()
                 #screen.blit(cImg,(player1.x,player1.y))
-                grid[player1.y//60][player1.x//60]= 6
+                grid2[player1.y//60][player1.x//60]= 9
+                shmaloogle.hp -= 25
+                draw_panel(screen,coins)
     if(grid[player1.y//60][player1.x//60]== 7):
         if event.type == py.KEYDOWN:
             if event.key == py.K_SPACE:
@@ -149,6 +171,7 @@ def dig():
 #r = img.get_rect()
 run = True
 
+
 while run:
     clock.tick(60)
     if fight == False:
@@ -159,12 +182,17 @@ while run:
             dig()
         screen.blit(bgImg,(0,0))
         draw_panel(screen,coins)
+        player1.collision(shmaloogle)
+        if player1.collide == True:
+            time.sleep(2)
+            fight = True
     #update coins
     '''
     How to draw on the screen using grid
     '''
     draw_grid(grid)
     if fight == True:
+        draw_panel(screen,coins)
         for event in py.event.get():
             if event.type == py.QUIT:
                 run = False
@@ -178,23 +206,35 @@ while run:
         and then draw them from x = 0
         ''' 
         if bulletlist[0].y >= 8*cell_size:
-            grid2 = [[randint(0,1) for i in range(grid_c)]] + [[1 for i in range(grid_c)] for j in range(grid_r - 1)]
+            while True:
+                grid2 = [[randint(0,1) for i in range(grid_c)]] + [[1 for i in range(grid_c)] for j in range(grid_r - 1)] 
+                grid2[4][randint(0,8)] = 3
+                count = 0
+                for a in range(grid_c):
+                    if grid2[0][a] == 0:
+                        count += 1
+                if count < 5 or count == 9:
+                   continue
+                else: break
+            
             bulletlist = []
             for r in range(grid_r):
                 for c in range(grid_c):
                     if grid2[r][c] == 0:
                         bulletlist.append(Bullets(c*cell_size, r*cell_size,bImg))
+                        
+            print(len(bulletlist))
         for i in bulletlist:
             player1.collision(i)
             if player1.collide == True:
-               player1.hp -= 25
-               draw_panel(screen,coins)
-               grid2 = [[randint(0,1) for i in range(grid_c)]] + [[1 for i in range(grid_c)] for j in range(grid_r - 1)]
-               bulletlist = []
-               for r in range(grid_r):
-                   for c in range(grid_c):
-                       if grid2[r][c] == 0:
-                        bulletlist.append(Bullets(c*cell_size, r*cell_size,bImg))
+                player1.hp -= 25
+                draw_panel(screen,coins)
+                bulletlist = []
+                for r in range(grid_r):
+                    for c in range(grid_c):
+                        if grid2[r][c] == 0:
+                            bulletlist.append(Bullets(c*cell_size, r*cell_size,bImg))
+                
 
         
 
@@ -205,8 +245,13 @@ while run:
         death = True
         screen.blit(dbgImg,(0,0))
     
+    if shmaloogle.hp == 0:
+        fight = False
+        win = True
+        screen.blit(vImg,(0,0))
     
-    if player1.hp != 0:
+    
+    if player1.hp != 0 and shmaloogle.hp != 0:
         player1.draw(screen)
 
 

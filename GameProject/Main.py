@@ -1,5 +1,5 @@
 from Player import Player
-# I FUCKING HATE NIGGERS
+
 import pygame as py
 py.init()
 width, height = 600, 600
@@ -9,7 +9,6 @@ clock = py.time.Clock()
 
 run = True
 #seting up the background colour
-# I FUCKING HATE NIGGERS
 
 player1 = Player(0, 0, 50, 50)
 
@@ -26,7 +25,7 @@ while run:
     screen.fill("#e2dede")
     r1 = player1.draw(screen)                  #ts will call the draw function from the player
     r2 = player2.draw(screen)
-    player1.move(screen)# I FUCKING HATE NIGGERS
+    player1.move(screen)
     #player1.collision(player2)
     print(r1.colliderect(r2))
 
@@ -36,5 +35,5 @@ while run:
     '''
    
     py.display.flip()
-    # I FUCKING HATE NIGGERS
+  
 py.quit
