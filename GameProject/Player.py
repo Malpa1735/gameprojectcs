@@ -129,3 +129,21 @@ class Shmaloogle:
     def draw(self, screen):
         #blit draws surface on a surface. Here image surface is drawn on the screen
         screen.blit(self.img, (self.x, self.y))    
+
+
+class mini_Boss:
+        
+    
+    def __init__(self, x, y, img):
+       
+        self.x = x
+        self.y = y
+        self.w = 50
+        self.h = 50
+        self.img = img
+        self.hp = 100
+        self.rect = (self.x, self.y, self.w, self.h) 
+
+    def draw(self, screen):
+        #blit draws surface on a surface. Here image surface is drawn on the screen
+        screen.blit(self.img, (self.x, self.y)) 
