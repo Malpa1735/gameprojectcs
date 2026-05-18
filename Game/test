@@ -255,6 +255,109 @@ def draw_panel(screen, coins):
         screen.blit(textSurface4, (width + 20, 240))
         screen.blit(spImg, (width + 20, 250))
 
+small_font = py.font.SysFont(None, 40)
+
+
+def quick_time_event(screen, clock, keys_needed=4, time_limit=2000):
+    """
+    Returns:
+        True  = success
+        False = failed
+    """
+
+    possible_keys = [
+        py.K_w,
+        py.K_a,
+        py.K_s,
+        py.K_d
+    ]
+
+    # Generate random sequence
+    qte_keys = [random.choice(possible_keys) for _ in range(keys_needed)]
+
+    current_step = 0
+    start_time = py.time.get_ticks()
+
+    run_qte = True
+    while run_qte and mini.hp != 0:
+
+        current_time = py.time.get_ticks()
+        elapsed = current_time - start_time
+
+        # ---------- EVENTS ----------
+        for event in py.event.get():
+
+            if event.type == py.QUIT:
+                py.quit()
+                quit()
+
+            if event.type == py.KEYDOWN:
+
+                expected_key = qte_keys[current_step]
+
+                # Correct key
+                if event.key == expected_key:
+                    current_step += 1
+
+                    # Finished sequence
+                    if current_step >= keys_needed:
+                        return True
+
+                # Wrong key
+                else:
+                    return False
+            
+        # ---------- TIMEOUT ----------
+        if elapsed >= time_limit:
+            return False
+
+        # ---------- DRAW ----------
+        screen.fill((25, 25, 25))
+
+        title = font.render("QUICK TIME EVENT", True, (255, 255, 255))
+        screen.blit(title, (220, 100))
+
+        # Draw key sequence
+        for i, key in enumerate(qte_keys):
+
+            key_name = py.key.name(key).upper()
+
+            # Completed
+            if i < current_step:
+                color = (0, 255, 0)
+
+            # Current key
+            elif i == current_step:
+                color = (255, 255, 0)
+
+            # Upcoming
+            else:
+                color = (255, 255, 255)
+
+            text = font.render(key_name, True, color)
+
+            x = 220 + i * 120
+            y = 250
+
+            screen.blit(text, (x, y))
+
+        # Timer bar
+        remaining = max(0, time_limit - elapsed)
+        bar_width = int((remaining / time_limit) * 500)
+
+        py.draw.rect(screen, (60, 60, 60), (200, 400, 500, 35))
+        py.draw.rect(screen, (255, 0, 0), (200, 400, bar_width, 35))
+
+        timer_text = small_font.render("TIME", True, (255, 255, 255))
+        screen.blit(timer_text, (200, 360))
+
+        run_qte == False
+        py.display.flip()
+        clock.tick(60)
+
+
+
+
 
 def dig():
     global fight
@@ -321,7 +424,7 @@ def draw_skin(rect, image,text):
     screen.blit(tg,tg_rect)
     screen.blit(btext, btext_rect)
 
-    
+# From ts point the game starts   
 # From ts point the game starts
 # From ts point the game starts
 # From ts point the game starts
@@ -394,16 +497,18 @@ while skins:
     clock.tick(60)
 
 
-
+reset = 0
 
 grid = carve_path(grid, start, end)
 add_random_openings(grid, 0.1)
+grid[4][7] = 1
 for r in range(grid_r):
     for c in range(grid_c):
         if grid[r][c] == 0:
             obstaclelist.append(Obstacle(c*cell_size, r*cell_size,oImg))
 grid[4][0] = 12
-grid[4][8] = 11            
+grid[4][8] = 11
+           
 for r in grid:
     print(r)
 
@@ -436,29 +541,45 @@ while run:
             #if player1.collide == True and keys == 3:
                 #time.sleep(2)
                 #fight = True
-            player1.collision(doors)
-            if player1.collide == True:
-                walked += 1
-                keys += 1 #<------------------------------------------------------------------- temporary just to test out/ later keys will increase when killing a miniboss
-                print(walked)
-                if cat == True:
-                    player1 = Player(0,4*60,meow)
-                elif st == True:
-                    player1 = Player(0,4*60,stardew)
-                else:
-                    player1 = Player(0,4*60,img)
-                grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
-                obstaclelist = [] 
-                grid = carve_path(grid, start, end)
-                add_random_openings(grid, 0.1)
-                for r in range(grid_r):
-                    for c in range(grid_c):
-                        if grid[r][c] == 0:
-                            obstaclelist.append(Obstacle(c*cell_size, r*cell_size,oImg))
-                grid[4][0] = 12
-                grid[4][8] = 11
-                draw_grid(grid)
-                py.display.flip
+            if reset == 3 and keys != 3:
+                mini.hp = 100
+                reset = 0
+            if mini.hp != 0 and walked%3 == 0:
+                player1.collision(mini)
+                if player1.collide == True:
+                    result = quick_time_event(screen,clock,keys_needed=4,time_limit=2000)
+                    if result:
+                        mini.hp = 0
+                        keys += 1
+
+                    py.display.flip()
+                    clock.tick(60)
+            if mini.hp == 0:    
+                player1.collision(doors)
+                if player1.collide == True:
+                    walked += 1
+                    reset += 1
+                    #keys += 1 #<------------------------------------------------------------------- temporary just to test out/ later keys will increase when killing a miniboss
+                    print(walked)
+                    if cat == True:
+                        player1 = Player(0,4*60,meow)
+                    elif st == True:
+                        player1 = Player(0,4*60,stardew)
+                    else:
+                        player1 = Player(0,4*60,img)
+                    grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+                    obstaclelist = [] 
+                    grid = carve_path(grid, start, end)
+                    grid[4][7] = 1
+                    add_random_openings(grid, 0.1)
+                    for r in range(grid_r):
+                        for c in range(grid_c):
+                            if grid[r][c] == 0:
+                                obstaclelist.append(Obstacle(c*cell_size, r*cell_size,oImg))
+                    grid[4][0] = 12
+                    grid[4][8] = 11
+                    draw_grid(grid)
+                    py.display.flip
         
     #update coins
     '''
