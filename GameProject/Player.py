@@ -130,6 +130,22 @@ class Shmaloogle:
         #blit draws surface on a surface. Here image surface is drawn on the screen
         screen.blit(self.img, (self.x, self.y))    
 
+class DOOR:
+    
+    
+    def __init__(self, x, y, img):
+       
+        self.x = x
+        self.y = y
+        self.w = 60
+        self.h = 60
+        self.img = img
+        self.rect = (self.x, self.y, self.w, self.h) 
+
+    def draw(self, screen):
+        #blit draws surface on a surface. Here image surface is drawn on the screen
+        screen.blit(self.img, (self.x, self.y))   
+
 
 class mini_Boss:
         
@@ -141,9 +157,33 @@ class mini_Boss:
         self.w = 50
         self.h = 50
         self.img = img
-        self.hp = 100
+        self.hp = 3
         self.rect = (self.x, self.y, self.w, self.h) 
 
     def draw(self, screen):
         #blit draws surface on a surface. Here image surface is drawn on the screen
         screen.blit(self.img, (self.x, self.y)) 
+
+class Flames:
+    
+
+
+    def __init__(self, x, y, img):
+        self.x = x
+        self.y = y
+        self.w = 50
+        self.h = 50
+        self.img = img
+        self.hp = 3
+        self.rect = (self.x, self.y, self.w, self.h) 
+
+
+    def draw(self, screen):
+        #blit draws surface on a surface. Here image surface is drawn on the screen
+        screen.blit(self.img, (self.x, self.y))
+
+    def move(self, screen, grid, up:bool):
+        if up:
+            self.y += 1
+        else:
+            self.y -= 1

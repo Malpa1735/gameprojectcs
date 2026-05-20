@@ -8,6 +8,7 @@ from Player import Bullets
 from Player import Shmaloogle
 from Player import DOOR
 from Player import mini_Boss
+from Player import Flames
 import time
 #to generalise  our grid we use the following variables
 py.mixer.init()
@@ -21,66 +22,79 @@ grid = [[randint(0,4) for i in range(grid_c)] for j in range(grid_r)]
 #grid[5][4] = 7
 grid2 = [[randint(0,1) for i in range(grid_c)]] + [[1 for i in range(grid_c)] for j in range(grid_r - 1)]
 grid3 = [[5 for i in range(grid_c)]for j in range(grid_r)] + [[8 for i in range(grid_c - 5)] for j in range(grid_r)]
-gridsm = [[1 for i in range(grid_c)] for j in range(grid_r)]
+gridsm = [[12 for i in range(grid_c)] for j in range(1)] + [[1 for i in range(grid_c)] for j in range(grid_r - 2)] + [[15 for i in range(grid_c)] for j in range(1)]
+
+
+for g in gridsm:
+    print(g)
 #ensure starting area is always open
 grid[0][0] = 1
 grid[0][1] = 1  #right neighbour
 grid[1][0] = 1  #bottom neighbour
 
-for g in grid:
-    print(g)
+#for g in grid:
+    #print(g)
 print("go talk to shmallogle")
 cell_size = 60 #cell size in which the player will reside
 #width and height of the game layout depends on the grid and cell size
 width, height = cell_size*grid_c, cell_size*grid_r
 panel = 300
 coins = 0
-sImg = py.image.load('shmaloogle.webp')
+fr = py.image.load('GameProject/sprites/fire.png')
+fr = py.transform.scale(fr,(60,60))
+sImg = py.image.load('GameProject/sprites/shmaloogle.webp')
 spImg = py.transform.scale(sImg,(260,260))
 sImg = py.transform.scale(sImg,(60,60))
-bImg = py.image.load('bullet.png')
+bImg = py.image.load('GameProject/sprites/Bullet.png')
 bImg = py.transform.scale(bImg,(60,60))
-oImg = py.image.load('tree.png')
+oImg = py.image.load('GameProject/sprites/Tree.png')
 oImg = py.transform.scale(oImg,(60,60))
-bgImg = py.image.load('grass.jpg')
+bgImg = py.image.load('GameProject/sprites/grass.jpg')
 bgImg = py.transform.scale(bgImg,(width,height))
-img = py.image.load('placeholder.jpg')
+img = py.image.load('GameProject/sprites/placeholder.jpg')
 img = py.transform.scale(img,(60,60))
-cImg = py.image.load('coin.png')
+cImg = py.image.load('GameProject/sprites/coin.png')
 cImg = py.transform.scale(cImg,(60,60))
 #pImg = py.image.load('poop.jpg')
 #pImg = py.transform.scale(pImg,(60,60))
-fbgImg = py.image.load('fbimg.jpg')
+fbgImg = py.image.load('GameProject/sprites/Fbimg.jpg')
 fbgImg = py.transform.scale(fbgImg,(width,height))
-dbgImg = py.image.load('dbimg.webp')
+dbgImg = py.image.load('GameProject/sprites/dbimg.webp')
 dbgImg = py.transform.scale(dbgImg,(width,height))
-vImg = py.image.load('vic.jpg')
+vImg = py.image.load('GameProject/sprites/Vic.jpg')
 vImg = py.transform.scale(vImg,(width,height))
-title = py.image.load('Image.jpg')
+title = py.image.load('GameProject/sprites/Image.jpg')
 title = py.transform.scale(title,(width + 300,height))
-meow = py.image.load('cat.png')
+meow = py.image.load('GameProject/sprites/cat.png')
 meow = py.transform.scale(meow,(60,60))
-stardew = py.image.load('stardew.png')
+stardew = py.image.load('GameProject/sprites/stardew.png')
 stardew = py.transform.scale(stardew,(60,60))
-door = py.image.load('door.png')
+door = py.image.load('GameProject/sprites/door.png')
 door = py.transform.scale(door,(60,60))
-doorl = py.image.load('door_lock.png')
+doorl = py.image.load('GameProject/sprites/door_lock.png')
 doorl = py.transform.scale(doorl,(60,60))
-miniBs = py.image.load('minibosssn.png')
+miniBs = py.image.load('GameProject/sprites/minibosssn.png')
 miniBs = py.transform.scale(miniBs,(60,60))
 keys = 0
 #
 player1 = Player(0,4*60,img)
-shmaloogle = Shmaloogle(5*60,5*60,sImg) #best line of code ever?
+shmaloogle = Shmaloogle(4*60,4*60,sImg) #best line of code ever?
 doors = DOOR(8*60,4*60,door)
 mini = mini_Boss(7*60,4*60,miniBs)
 #
+flamelist1 = []
+flamelist2 = []
 
 
 #mImg = py.image.load('menu.jpg')
 #mImg = py.transform.scale(mImg,(width,height))
 bulletlist = []
-
+for r in range(grid_r):
+    for c in range(grid_c):
+        if gridsm[r][c] == 12:
+            flamelist1.append(Flames(c*cell_size, r*cell_size,fr))
+        if gridsm[r][c] == 15:
+            flamelist2.append(Flames(c*cell_size, r*cell_size,fr))
 
 for r in range(grid_r):
     for c in range(grid_c):
@@ -184,21 +198,32 @@ for r in range(grid_r):
             obstaclelist.append(Obstacle(c*cell_size, r*cell_size,oImg))
 '''
 walked = 0
-
+win = False
 def draw_grid(grid:list):
     row = 0 #row of grid
     col = 0 #column of grid
     index = 0
+    index2 = 0
     
     if walked%3 == 0 and mini.hp != 0 and keys != 3:
         mini.draw(screen)
         screen.blit(doorl,(8*60,4*60))
     elif keys != 3:
         doors.draw(screen)   
-        
+    
     if shmaloogle.hp != 0 and keys == 3:
         shmaloogle.draw(screen)
+    
+    for i in range(len(flamelist1)):
+        if win == True:
+                flamelist1[index2].draw(screen)
+                flamelist2[index2].draw(screen)
+                index2 += 1
+    
+    
     for i in range(grid_r*grid_c): #looping through the entire grid
+        
+        
         if grid[row][col] == 0:    #check if grid list has 1
             #if yes then draw the obstacle
             obstaclelist[index].draw(screen)
@@ -237,7 +262,7 @@ def draw_fight(grid2:list):
 
 fight = False
 death = False
-win = False
+
 def draw_panel(screen, coins):
     font = py.font.SysFont(None, 30)
     #panel background
@@ -254,6 +279,110 @@ def draw_panel(screen, coins):
     if death == True:
         screen.blit(textSurface4, (width + 20, 240))
         screen.blit(spImg, (width + 20, 250))
+
+small_font = py.font.SysFont(None, 40)
+
+
+def quick_time_event(screen, clock, keys_needed=4, time_limit=2000):
+    """
+    Returns:
+        True  = success
+        False = failed
+    """
+
+    possible_keys = [
+        py.K_w,
+        py.K_a,
+        py.K_s,
+        py.K_d
+    ]
+
+    # Generate random sequence
+    qte_keys = [random.choice(possible_keys) for _ in range(keys_needed)]
+
+    current_step = 0
+    start_time = py.time.get_ticks()
+
+    run_qte = True
+    while run_qte and mini.hp != 0:
+
+        current_time = py.time.get_ticks()
+        elapsed = current_time - start_time
+        if player1.hp == 0:
+            run_qte = False
+        # ---------- EVENTS ----------
+        for event in py.event.get():
+
+            if event.type == py.QUIT:
+                py.quit()
+                quit()
+
+            if event.type == py.KEYDOWN:
+
+                expected_key = qte_keys[current_step]
+
+                # Correct key
+                if event.key == expected_key:
+                    current_step += 1
+
+                    # Finished sequence
+                    if current_step >= keys_needed:
+                        return True
+
+                # Wrong key
+                else:
+                    return False
+            
+        # ---------- TIMEOUT ----------
+        if elapsed >= time_limit:
+            return False
+
+        # ---------- DRAW ----------
+        screen.fill((25, 25, 25))
+
+        title = font.render("Think fast boy", True, (255, 255, 255))
+        screen.blit(title, (220, 100))
+
+        # Draw key sequence
+        for i, key in enumerate(qte_keys):
+
+            key_name = py.key.name(key).upper()
+
+            # Completed
+            if i < current_step:
+                color = (0, 255, 0)
+
+            # Current key
+            elif i == current_step:
+                color = (255, 255, 0)
+
+            # Upcoming
+            else:
+                color = (255, 255, 255)
+
+            text = font.render(key_name, True, color)
+
+            x = 220 + i * 120
+            y = 250
+
+            screen.blit(text, (x, y))
+
+        # Timer bar
+        remaining = max(0, time_limit - elapsed)
+        bar_width = int((remaining / time_limit) * 500)
+
+        py.draw.rect(screen, (60, 60, 60), (200, 400, 500, 35))
+        py.draw.rect(screen, (255, 0, 0), (200, 400, bar_width, 35))
+
+        timer_text = small_font.render("TIME", True, (255, 255, 255))
+        screen.blit(timer_text, (200, 360))
+
+        run_qte == False
+        py.display.flip()
+        clock.tick(60)
+
+
+
 
 
 def dig():
@@ -321,7 +450,7 @@ def draw_skin(rect, image,text):
     screen.blit(tg,tg_rect)
     screen.blit(btext, btext_rect)
 
-    
+# From ts point the game starts   
 # From ts point the game starts
 # From ts point the game starts
 # From ts point the game starts
@@ -394,16 +523,18 @@ while skins:
     clock.tick(60)
 
 
-
+reset = 0
 
 grid = carve_path(grid, start, end)
 add_random_openings(grid, 0.1)
+grid[4][7] = 1
 for r in range(grid_r):
     for c in range(grid_c):
         if grid[r][c] == 0:
             obstaclelist.append(Obstacle(c*cell_size, r*cell_size,oImg))
 grid[4][0] = 12
-grid[4][8] = 11            
+grid[4][8] = 11
+           
 for r in grid:
     print(r)
 
@@ -436,29 +567,48 @@ while run:
             #if player1.collide == True and keys == 3:
                 #time.sleep(2)
                 #fight = True
-            player1.collision(doors)
-            if player1.collide == True:
-                walked += 1
-                keys += 1 #<------------------------------------------------------------------- temporary just to test out/ later keys will increase when killing a miniboss
-                print(walked)
-                if cat == True:
-                    player1 = Player(0,4*60,meow)
-                elif st == True:
-                    player1 = Player(0,4*60,stardew)
-                else:
-                    player1 = Player(0,4*60,img)
-                grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
-                obstaclelist = [] 
-                grid = carve_path(grid, start, end)
-                add_random_openings(grid, 0.1)
-                for r in range(grid_r):
-                    for c in range(grid_c):
-                        if grid[r][c] == 0:
-                            obstaclelist.append(Obstacle(c*cell_size, r*cell_size,oImg))
-                grid[4][0] = 12
-                grid[4][8] = 11
-                draw_grid(grid)
-                py.display.flip
+            if reset == 3 and keys != 3:
+                mini.hp = 100
+                reset = 0
+            if mini.hp != 0 and walked%3 == 0:
+                player1.collision(mini)
+                if player1.collide == True:
+                    result = quick_time_event(screen,clock,keys_needed=4,time_limit=2000)
+                    if result:
+                        mini.hp = 0
+                        keys += 1
+                    py.display.flip()
+                    clock.tick(60)
+            if mini.hp == 0:    
+                player1.collision(doors)
+                if player1.collide == True:
+                    walked += 1
+                    reset += 1
+                    #keys += 1 #<------------------------------------------------------------------- temporary just to test out/ later keys will increase when killing a miniboss
+                    print(walked)
+                    player1.x = 0
+                    player1.y = 4*60
+                    
+                    '''
+                    if cat == True:
+                        player1 = Player(0,4*60,meow)
+                    elif st == True:
+                        player1 = Player(0,4*60,stardew)
+                    else:
+                        player1 = Player(0,4*60,img)'''
+                    grid = [[0 for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+                    obstaclelist = [] 
+                    grid = carve_path(grid, start, end)
+                    grid[4][7] = 1
+                    add_random_openings(grid, 0.1)
+                    for r in range(grid_r):
+                        for c in range(grid_c):
+                            if grid[r][c] == 0:
+                                obstaclelist.append(Obstacle(c*cell_size, r*cell_size,oImg))
+                    grid[4][0] = 12
+                    grid[4][8] = 11
+                    draw_grid(grid)
+                    py.display.flip
         
     #update coins
     '''
@@ -525,7 +675,18 @@ while run:
         fight = False
         win = True
         screen.blit(vImg,(0,0))
-    
+        #screen.blit(bgImg,(0,0))
+        #draw_grid(gridsm)
+        #screen.blit(vImg,(0,0))
+        #for r in flamelist1:
+        #    r.move(screen, gridsm, True)
+        #for b in flamelist2:
+        #    b.move(screen, gridsm, False)
+        #for i in flamelist1:
+        #    player1.collision(i)
+        #    if player1.collide == True:
+        #        player1.hp = 0
+        #py.display.flip()
     
     if player1.hp != 0 and shmaloogle.hp != 0:
         player1.draw(screen)
